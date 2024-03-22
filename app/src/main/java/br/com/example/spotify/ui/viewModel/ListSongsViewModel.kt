@@ -11,8 +11,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 open class ListSongsViewModel(
-    private val songDAO: SongDAO,
-    private val repositoryFirebaseFirestoreImpl: RepositoryFirebaseFirestoreImpl
+    private val _songDAO: SongDAO,
+    private val _repositoryFirebaseFirestoreImpl: RepositoryFirebaseFirestoreImpl
 ) : ViewModel() {
 
     private val _listSongs = MutableLiveData<List<SongModel>>()
@@ -20,20 +20,20 @@ open class ListSongsViewModel(
 
     init {
         CoroutineScope(Dispatchers.IO).launch {
-            if (songDAO.getAll().isEmpty()) {
+            if (_songDAO.getAll().isEmpty()) {
                 fetchSongsFromFirebaseAndStoreLocally()
             } else {
-                _listSongs.postValue(songDAO.getAll())
+                _listSongs.postValue(_songDAO.getAll())
             }
         }
     }
 
     private fun fetchSongsFromFirebaseAndStoreLocally() {
         CoroutineScope(Dispatchers.IO).launch {
-            val listSongsTemp = repositoryFirebaseFirestoreImpl.getAllSongs()
+            val listSongsTemp = _repositoryFirebaseFirestoreImpl.getAllSongs()
             _listSongs.postValue(listSongsTemp)
-            songDAO.deleteAll()
-            songDAO.insertAll(listSongsTemp)
+            _songDAO.deleteAll()
+            _songDAO.insertAll(listSongsTemp)
         }
     }
 
