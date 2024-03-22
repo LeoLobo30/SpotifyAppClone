@@ -2,16 +2,13 @@ package br.com.example.spotify.data.firebase.impl
 
 import android.util.Log
 import br.com.example.spotify.data.firebase.interfaces.RepositoryFirebase
-import br.com.example.spotify.data.firebase.model.SongModel
+import br.com.example.spotify.data.model.SongModel
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestoreSettings
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.firestore.toObject
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
