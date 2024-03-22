@@ -24,9 +24,11 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -35,11 +37,23 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import br.com.example.spotify.R
+import br.com.example.spotify.data.model.SongModel
+import br.com.example.spotify.ui.viewModel.PlaySongViewModel
 import kotlinx.coroutines.delay
+import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PlaySongScreen(navController: NavController, title: String?) {
+fun PlaySongScreen(navController: NavController, idSong: Long?, playSongViewModel: PlaySongViewModel = koinViewModel()) {
+
+    var song: SongModel? by remember {
+        mutableStateOf(null)
+    }
+
+    LaunchedEffect(idSong) {
+        song = idSong?.let { playSongViewModel.getSongById(it) }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -62,7 +76,7 @@ fun PlaySongScreen(navController: NavController, title: String?) {
             verticalArrangement = Arrangement.Center
         ) {
             // Cabeçalho com capa do álbum e título da música
-            AlbumArtAndTitleSection(title)
+            AlbumArtAndTitleSection(song?.title, song?.band)
             // Barra de progresso da música
             SeekBarSection()
             // Controles de reprodução (play, pause, stop)
@@ -73,7 +87,7 @@ fun PlaySongScreen(navController: NavController, title: String?) {
 }
 
 @Composable
-fun AlbumArtAndTitleSection(title: String?) {
+fun AlbumArtAndTitleSection(title: String?, band: String?) {
     Column(
         modifier = Modifier.padding(32.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -92,6 +106,11 @@ fun AlbumArtAndTitleSection(title: String?) {
             style = MaterialTheme.typography.bodyMedium,
             fontSize = 20.sp,
         )
+        Text(
+            text = band ?: "Nenhuma banda selecionada",
+            style = MaterialTheme.typography.bodyMedium,
+            fontSize = 14.sp,
+        )
     }
 }
 
@@ -103,13 +122,19 @@ fun PlaybackControlsSection() {
         horizontalArrangement = Arrangement.spacedBy(32.dp)
     ) {
         IconButton(onClick = { /* back action */ }) {
-            Icon(painterResource(R.drawable.baseline_arrow_circle_left_24), contentDescription = "backSong")
+            Icon(
+                painterResource(R.drawable.baseline_arrow_circle_left_24),
+                contentDescription = "backSong"
+            )
         }
         IconButton(onClick = { /* Play action */ }) {
             Icon(painterResource(R.drawable.baseline_pause_circle_24), contentDescription = "Play")
         }
         IconButton(onClick = { /* next action */ }) {
-            Icon(painterResource(R.drawable.baseline_arrow_circle_right_24), contentDescription = "nextSong")
+            Icon(
+                painterResource(R.drawable.baseline_arrow_circle_right_24),
+                contentDescription = "nextSong"
+            )
         }
     }
 }

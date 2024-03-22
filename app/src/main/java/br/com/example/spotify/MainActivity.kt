@@ -7,6 +7,7 @@ import androidx.room.Room
 import br.com.example.spotify.data.firebase.impl.RepositoryFirebaseFirestoreImpl
 import br.com.example.spotify.data.room.database.SongDatabase
 import br.com.example.spotify.ui.viewModel.ListSongsViewModel
+import br.com.example.spotify.ui.viewModel.PlaySongViewModel
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 import org.koin.androidx.viewmodel.dsl.viewModel
@@ -40,6 +41,7 @@ class MainActivity : ComponentActivity() {
 
         val viewModel = module {
             viewModel { ListSongsViewModel(get(), get()) }
+            viewModel { PlaySongViewModel(get()) }
         }
 
         val firebaseModule = module {

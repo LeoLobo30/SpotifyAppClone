@@ -26,4 +26,7 @@ interface SongDAO {
 
     @Insert
     fun insertAll(songs: List<SongModel>)
+
+    @Query("SELECT * FROM songs WHERE id = :id")
+    fun getSongById(id: Long): SongModel
 }

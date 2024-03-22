@@ -16,12 +16,12 @@ fun MainApp() {
 
     NavHost(navController = navController, startDestination = Routes.ListSongs.name) {
         composable(Routes.ListSongs.name) {
-                ListSongsScreen(navController)
+            ListSongsScreen(navController)
         }
-        composable(Routes.PlaySong.name + "/{title}", arguments = listOf(navArgument("title") {
-            type = NavType.StringType
+        composable(Routes.PlaySong.name + "/{idSong}", arguments = listOf(navArgument("idSong") {
+            type = NavType.LongType
         })) {
-            PlaySongScreen(navController, it.arguments?.getString("title"))
+            PlaySongScreen(navController, it.arguments?.getLong("idSong"))
         }
     }
 
