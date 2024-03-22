@@ -1,14 +1,20 @@
-package br.com.example.spotify.data.firebase.model
+package br.com.example.spotify.data.model
 
 import android.os.Parcel
 import android.os.Parcelable
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 
+@Entity(tableName = "songs")
 data class SongModel(
+    @PrimaryKey(autoGenerate = true)
+    val id: Long? = null,
     val title: String? = null,
     val band: String? = null,
     val songURL : String? = null
 ) : Parcelable {
     constructor(parcel: Parcel) : this(
+        parcel.readLong(),
         parcel.readString(),
         parcel.readString(),
         parcel.readString()
