@@ -4,25 +4,36 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import br.com.example.spotify.data.firebase.impl.RepositoryFirebaseFirestoreImpl
-import br.com.example.spotify.data.firebase.model.SongModel
+import br.com.example.spotify.data.model.SongModel
+import br.com.example.spotify.data.room.interfaces.SongDAO
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-open class ListSongsViewModel : ViewModel() {
-
-    private val repositoryFirebaseFirestoreImpl = RepositoryFirebaseFirestoreImpl(false)
+open class ListSongsViewModel(
+    private val songDAO: SongDAO,
+    private val repositoryFirebaseFirestoreImpl: RepositoryFirebaseFirestoreImpl
+) : ViewModel() {
 
     private val _listSongs = MutableLiveData<List<SongModel>>()
     val listSongs: LiveData<List<SongModel>> get() = _listSongs
 
     init {
-        getSongs()
+        CoroutineScope(Dispatchers.IO).launch {
+            if (songDAO.getAll().isEmpty()) {
+                fetchSongsFromFirebaseAndStoreLocally()
+            } else {
+                _listSongs.postValue(songDAO.getAll())
+            }
+        }
     }
 
-    private fun getSongs() {
-        CoroutineScope(Dispatchers.IO).launch() {
-            _listSongs.postValue(repositoryFirebaseFirestoreImpl.getAllSongs())
+    private fun fetchSongsFromFirebaseAndStoreLocally() {
+        CoroutineScope(Dispatchers.IO).launch {
+            val listSongsTemp = repositoryFirebaseFirestoreImpl.getAllSongs()
+            _listSongs.postValue(listSongsTemp)
+            songDAO.deleteAll()
+            songDAO.insertAll(listSongsTemp)
         }
     }
 
