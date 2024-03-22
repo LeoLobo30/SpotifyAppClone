@@ -2,7 +2,7 @@ package br.com.example.spotify.data.firebase.interfaces
 
 import com.google.firebase.ktx.Firebase
 
-interface RepositoryFirebase <T> {
+interface RepositoryFirebase<T> {
 
     fun getInstance(): T
 

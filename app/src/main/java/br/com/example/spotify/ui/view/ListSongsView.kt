@@ -31,85 +31,85 @@ import br.com.example.spotify.ui.viewModel.ListSongsViewModel
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
-    fun ListSongsScreen(
+fun ListSongsScreen(
     navController: NavController,
     listSongsViewModel: ListSongsViewModel = koinViewModel()
 ) {
-        val myActivity : MainActivity = LocalContext.current as MainActivity
+    val myActivity: MainActivity = LocalContext.current as MainActivity
 
-        var listSongs : List<SongModel> by remember {
-            mutableStateOf(listOf())
-        }
+    var listSongs: List<SongModel> by remember {
+        mutableStateOf(listOf())
+    }
 
-        myActivity.apply { ->
-            listSongsViewModel.listSongs.observe(this) {
-                listSongs = it
-            }
-        }
-
-        Column(modifier = Modifier.fillMaxSize()) {
-            for (song in listSongs){
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(Dp(60f)),
-                ) {
-                    Column(modifier = Modifier.align(Alignment.CenterVertically)) {
-                        IconButton(onClick = { navController.navigate(route = Routes.PlaySong.name + "/${song.title}") }) {
-                            Icon(
-                                Icons.Filled.PlayArrow, contentDescription = "play music",
-                                Modifier.size(Dp(35f))
-                            )
-                        }
-                    }
-                    Column(
-                        modifier = Modifier
-                            .align(Alignment.CenterVertically)
-                            .padding(start = Dp(20f))
-                    ) {
-                        Text(
-                            text = "title - ${song.title}",
-                            modifier = Modifier.padding(bottom = Dp(5f))
-                        )
-                        Text(text = "band - ${song.band}")
-                    }
-                }
-                Divider()
-            }
+    myActivity.apply { ->
+        listSongsViewModel.listSongs.observe(this) {
+            listSongs = it
         }
     }
 
-    @Preview(showBackground = true)
-    @Composable
-    fun ListSongsPreview() {
-        Column(modifier = Modifier.fillMaxSize()) {
-            for (i in 0..9) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(Dp(60f)),
-                ) {
-                    Column(modifier = Modifier.align(Alignment.CenterVertically)) {
-                        IconButton(onClick = { /*TODO*/ }) {
-                            Icon(
-                                Icons.Filled.PlayArrow, contentDescription = "play music",
-                                Modifier.size(Dp(35f))
-                            )
-                        }
-                    }
-                    Column(
-                        modifier = Modifier
-                            .align(Alignment.CenterVertically)
-                            .padding(start = Dp(20f))
-                    ) {
-                        Text(
-                            text = "title - link park",
-                            modifier = Modifier.padding(bottom = Dp(5f))
+    Column(modifier = Modifier.fillMaxSize()) {
+        for (song in listSongs) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(Dp(60f)),
+            ) {
+                Column(modifier = Modifier.align(Alignment.CenterVertically)) {
+                    IconButton(onClick = { navController.navigate(route = Routes.PlaySong.name + "/${song.id}") }) {
+                        Icon(
+                            Icons.Filled.PlayArrow, contentDescription = "play music",
+                            Modifier.size(Dp(35f))
                         )
-                        Text(text = "band - link park")
                     }
                 }
-                Divider()
+                Column(
+                    modifier = Modifier
+                        .align(Alignment.CenterVertically)
+                        .padding(start = Dp(20f))
+                ) {
+                    Text(
+                        text = "title - ${song.title}",
+                        modifier = Modifier.padding(bottom = Dp(5f))
+                    )
+                    Text(text = "band - ${song.band}")
+                }
             }
+            Divider()
         }
     }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun ListSongsPreview() {
+    Column(modifier = Modifier.fillMaxSize()) {
+        for (i in 0..9) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(Dp(60f)),
+            ) {
+                Column(modifier = Modifier.align(Alignment.CenterVertically)) {
+                    IconButton(onClick = { /*TODO*/ }) {
+                        Icon(
+                            Icons.Filled.PlayArrow, contentDescription = "play music",
+                            Modifier.size(Dp(35f))
+                        )
+                    }
+                }
+                Column(
+                    modifier = Modifier
+                        .align(Alignment.CenterVertically)
+                        .padding(start = Dp(20f))
+                ) {
+                    Text(
+                        text = "title - link park",
+                        modifier = Modifier.padding(bottom = Dp(5f))
+                    )
+                    Text(text = "band - link park")
+                }
+            }
+            Divider()
+        }
+    }
+}
