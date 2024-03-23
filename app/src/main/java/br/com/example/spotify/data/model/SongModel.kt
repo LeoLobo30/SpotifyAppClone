@@ -11,7 +11,7 @@ data class SongModel(
     val id: Long? = null,
     val title: String? = null,
     val band: String? = null,
-    val songURL : String? = null
+    val songUrl : String? = null
 ) : Parcelable {
     constructor(parcel: Parcel) : this(
         parcel.readLong(),

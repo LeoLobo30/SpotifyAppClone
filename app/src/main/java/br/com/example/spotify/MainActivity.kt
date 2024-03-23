@@ -34,7 +34,7 @@ class MainActivity : ComponentActivity() {
     private fun initKoin(): List<Module> {
         val roomModule = module {
             single {
-                Room.databaseBuilder(androidContext(), SongDatabase::class.java, "song_database")
+                Room.databaseBuilder(androidContext(), SongDatabase::class.java, "song_database").fallbackToDestructiveMigration()
                     .build().songDAO()
             }
         }
