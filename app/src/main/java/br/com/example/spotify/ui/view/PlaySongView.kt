@@ -23,6 +23,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -38,6 +39,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.media3.common.MediaItem
+import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
@@ -48,6 +50,8 @@ import br.com.example.spotify.ui.viewModel.PlaySongViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.koin.androidx.compose.koinViewModel
+import kotlin.time.DurationUnit
+import kotlin.time.toDuration
 
 private val songStateFlow = MutableStateFlow<SongModel?>(null)
 
@@ -63,7 +67,7 @@ fun PlaySongScreen(
 
     var allSongs: List<SongModel> by remember { mutableStateOf(listOf()) }
 
-    LaunchedEffect(null) {
+    LaunchedEffect(Unit) {
         allSongs = playSongViewModel.getAllSongs()
         songStateFlow.value = allSongs.find { it.id == idSong }
     }
@@ -72,7 +76,7 @@ fun PlaySongScreen(
 
     val exoPlayer = remember { ExoPlayer.Builder(context).build() }
 
-    LaunchedEffect(null) {
+    LaunchedEffect(Unit) {
         PlayerView(context).player = exoPlayer
         if (song != null) {
             val mediaItem = song?.songUrl?.let { MediaItem.fromUri(it) }
@@ -81,13 +85,20 @@ fun PlaySongScreen(
         exoPlayer.prepare()
     }
 
+    DisposableEffect(Unit) {
+        onDispose {
+            exoPlayer.release()
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("Play") },
                 colors = TopAppBarDefaults.topAppBarColors(MaterialTheme.colorScheme.primary),
                 navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
+                    IconButton(onClick = { navController.popBackStack()
+                    exoPlayer.release()}) {
                         Icon(Icons.Filled.ArrowBack, "Voltar")
                     }
                 }
@@ -105,7 +116,7 @@ fun PlaySongScreen(
             // Cabeçalho com capa do álbum e título da música
             AlbumArtAndTitleSection(song?.title, song?.band)
             // Barra de progresso da música
-            SeekBarSection()
+            SeekBarSection(exoPlayer)
             // Controles de reprodução (play, pause, stop)
             PlaybackControlsSection(exoPlayer, allSongs)
         }
@@ -202,45 +213,69 @@ fun PlaybackControlsSection(
 }
 
 @Composable
-fun SeekBarSection() {
-    val isPlaying = remember { mutableStateOf(false) }
-    val seekBarValue = remember { mutableFloatStateOf(0f) }
-    val songDuration = 100 // Duração total da música em segundos
+fun SeekBarSection(exoPlayer: ExoPlayer) {
 
-    LaunchedEffect(key1 = isPlaying.value) {
-        if (isPlaying.value) {
-            // Atualizar o valor da seekbar periodicamente enquanto a música está tocando
-            while (seekBarValue.value < songDuration.toFloat()) {
-                seekBarValue.value += 0.1f // Ajuste o valor de acordo com a taxa de atualização desejada
-                delay(100) // Ajuste o intervalo de atualização
+    var isPlaying by remember { mutableStateOf(exoPlayer.isPlaying) }  // Track playback state
+    var seekBarValue by remember { mutableFloatStateOf(0f) } // Current seek bar position
+    var songDuration by remember { mutableFloatStateOf(100f) } // Duration in seconds (converted to float)
+
+    LaunchedEffect(null) {
+        exoPlayer.addListener(
+            object : Player.Listener {
+                override fun onPlaybackStateChanged(playbackState: Int) {
+                    if (playbackState == Player.STATE_READY) { // Update seek bar position
+                        songDuration = exoPlayer.duration.toDuration(DurationUnit.MILLISECONDS)
+                            .toLong(DurationUnit.MILLISECONDS).toFloat()
+                        isPlaying = exoPlayer.isPlaying
+                    } else if (playbackState == Player.STATE_ENDED) {
+                        exoPlayer.seekTo(0)
+                    }
+                    super.onPlaybackStateChanged(playbackState)
+                }
             }
+        )
+    }
+
+    LaunchedEffect(exoPlayer.isPlaying) {
+        if (isPlaying) {
+            while (seekBarValue < songDuration) {
+                // Update seek bar value based on current player position
+                seekBarValue = exoPlayer.currentPosition.toFloat() / 1000f
+                delay(1000) // Adjust delay for desired update frequency
+            }
+        }
+    }
+
+    LaunchedEffect(key1 = seekBarValue) {
+        if (seekBarValue > 0 && !isPlaying) {
+            // Jump to the new position when scrubbing the seek bar
+            exoPlayer.seekTo(seekBarValue.toLong() * 1000) // Convert back to milliseconds
         }
     }
 
     Row(modifier = Modifier.fillMaxWidth()) {
         Text(
-            text = formatTime(seekBarValue.value),
+            text = formatTime(seekBarValue),
             modifier = Modifier.align(Alignment.CenterVertically)
         )
 
-        // Barra de progresso
+        // Seek bar with custom colors
         Slider(
             colors = SliderDefaults.colors(
-                thumbColor = Color.White,
-                activeTickColor = Color.White,
-                inactiveTickColor = Color.White
+                thumbColor = MaterialTheme.colorScheme.primary,
+                activeTrackColor = MaterialTheme.colorScheme.secondary,
+                inactiveTrackColor = MaterialTheme.colorScheme.secondary
             ),
-            value = seekBarValue.value,
-            onValueChange = { seekBarValue.value = it },
-            valueRange = 0f..songDuration.toFloat(),
+            value = seekBarValue,
+            onValueChange = { newValue ->
+                seekBarValue = newValue
+                    // Jump to the new position when scrubbing
+                    exoPlayer.seekTo((newValue * 1000).toLong())
+            },
+            valueRange = 0f..songDuration/1000f,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp)
-        )
-
-        Text(
-            text = formatTime(songDuration.toFloat()),
-            modifier = Modifier.align(Alignment.CenterVertically)
         )
     }
 }
@@ -249,5 +284,5 @@ fun SeekBarSection() {
 fun formatTime(seconds: Float): String {
     val minutes = (seconds / 60).toInt()
     val secondsFormatted = "%.0f".format(seconds % 60)
-    return "$minutes:$secondsFormatted"
+    return "${minutes}M : ${secondsFormatted}s"
 }
