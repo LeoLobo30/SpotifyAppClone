@@ -12,4 +12,9 @@ class PlaySongViewModel(
     suspend fun getSongById(id: Long) = withContext(Dispatchers.IO) {
         _songDAO.getSongById(id)
     }
+
+    suspend fun getAllSongs() = withContext(Dispatchers.IO) {
+        _songDAO.getAll()
+    }
+
 }
