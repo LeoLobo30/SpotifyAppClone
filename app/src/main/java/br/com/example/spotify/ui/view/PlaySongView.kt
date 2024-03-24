@@ -221,7 +221,10 @@ fun SeekBarSection(exoPlayer: ExoPlayer) {
     var seekBarValue by remember { mutableFloatStateOf(0f) } // Current seek bar position
     var songDuration by remember { mutableFloatStateOf(100f) } // Duration in seconds (converted to float)
 
-    LaunchedEffect(null) {
+    val convertToMilliSeconds = 1000
+    val convertToSeconds = 1000f
+
+    LaunchedEffect(Unit) {
         exoPlayer.addListener(
             object : Player.Listener {
                 override fun onPlaybackStateChanged(playbackState: Int) {
@@ -236,22 +239,10 @@ fun SeekBarSection(exoPlayer: ExoPlayer) {
                 }
             }
         )
-    }
 
-    LaunchedEffect(exoPlayer.isPlaying) {
-        if (isPlaying) {
-            while (seekBarValue < songDuration) {
-                // Update seek bar value based on current player position
-                seekBarValue = exoPlayer.currentPosition.toFloat() / 1000f
-                delay(1000) // Adjust delay for desired update frequency
-            }
-        }
-    }
-
-    LaunchedEffect(key1 = seekBarValue, key2 = isPlaying) {
-        if (seekBarValue > 0 && !isPlaying) {
-            // Jump to the new position when scrubbing the seek bar
-            exoPlayer.seekTo(seekBarValue.toLong() * 1000) // Convert back to milliseconds
+        while (true) {
+            seekBarValue = exoPlayer.currentPosition.toFloat() / convertToSeconds
+            delay(1000) // Adjust delay for desired update frequency
         }
     }
 
@@ -271,10 +262,9 @@ fun SeekBarSection(exoPlayer: ExoPlayer) {
             value = seekBarValue,
             onValueChange = { newValue ->
                 seekBarValue = newValue
-                // Jump to the new position when scrubbing
                 exoPlayer.seekTo((newValue * 1000).toLong())
             },
-            valueRange = 0f..songDuration / 1000f,
+            valueRange = 0f..songDuration / convertToSeconds,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp)
@@ -286,5 +276,5 @@ fun SeekBarSection(exoPlayer: ExoPlayer) {
 fun formatTime(seconds: Float): String {
     val minutes = (seconds / 60).toInt()
     val secondsFormatted = "%.0f".format(seconds % 60)
-    return "${minutes}M : ${secondsFormatted}s"
+    return "${minutes}m : ${secondsFormatted}s"
 }
