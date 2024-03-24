@@ -11,7 +11,7 @@ import br.com.example.spotify.ui.viewModel.PlaySongViewModel
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 import org.koin.androidx.viewmodel.dsl.viewModel
-import org.koin.compose.KoinApplication
+import org.koin.core.context.startKoin
 import org.koin.core.module.Module
 import org.koin.dsl.module
 
@@ -19,14 +19,15 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        startKoin {
+            androidContext(this@MainActivity)
+            androidLogger()
+            modules(initKoin())
+        }
+
         setContent {
-            KoinApplication(application = {
-                androidContext(this@MainActivity)
-                androidLogger()
-                modules(initKoin())
-            }) {
-                MainApp()
-            }
+            MainApp()
         }
 
     }
@@ -34,7 +35,8 @@ class MainActivity : ComponentActivity() {
     private fun initKoin(): List<Module> {
         val roomModule = module {
             single {
-                Room.databaseBuilder(androidContext(), SongDatabase::class.java, "song_database").fallbackToDestructiveMigration()
+                Room.databaseBuilder(androidContext(), SongDatabase::class.java, "song_database")
+                    .fallbackToDestructiveMigration()
                     .build().songDAO()
             }
         }
