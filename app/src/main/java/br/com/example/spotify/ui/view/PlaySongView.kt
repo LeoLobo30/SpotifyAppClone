@@ -97,8 +97,10 @@ fun PlaySongScreen(
                 title = { Text("Play") },
                 colors = TopAppBarDefaults.topAppBarColors(MaterialTheme.colorScheme.primary),
                 navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack()
-                    exoPlayer.release()}) {
+                    IconButton(onClick = {
+                        navController.popBackStack()
+                        exoPlayer.release()
+                    }) {
                         Icon(Icons.Filled.ArrowBack, "Voltar")
                     }
                 }
@@ -246,7 +248,7 @@ fun SeekBarSection(exoPlayer: ExoPlayer) {
         }
     }
 
-    LaunchedEffect(key1 = seekBarValue) {
+    LaunchedEffect(key1 = seekBarValue, key2 = isPlaying) {
         if (seekBarValue > 0 && !isPlaying) {
             // Jump to the new position when scrubbing the seek bar
             exoPlayer.seekTo(seekBarValue.toLong() * 1000) // Convert back to milliseconds
@@ -269,10 +271,10 @@ fun SeekBarSection(exoPlayer: ExoPlayer) {
             value = seekBarValue,
             onValueChange = { newValue ->
                 seekBarValue = newValue
-                    // Jump to the new position when scrubbing
-                    exoPlayer.seekTo((newValue * 1000).toLong())
+                // Jump to the new position when scrubbing
+                exoPlayer.seekTo((newValue * 1000).toLong())
             },
-            valueRange = 0f..songDuration/1000f,
+            valueRange = 0f..songDuration / 1000f,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp)
