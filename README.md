@@ -4,6 +4,16 @@
 
 This application is a clone of Spotify, but for learning purposes and not for profit. It currently has functionality to play music and browse a list of songs. The app is constantly evolving and open to anyone who wants to contribute by adding new features or improving the existing code.
 
+## Libraries/concepts used
+
+- Gradle with kotlin
+- The MVVM pattern
+- Jetpack Compose - for UI layer
+- Kotlin Coroutines & Kotlin Flow - for concurrency & reactive approach
+- Firebase - for get musics in serve-side and informations about songs
+- Koin - for Dependency Injection pattern implementation
+- Room - for local database
+
 ## Views
 
 - ListSongsView: Displays a list of songs.
