@@ -47,69 +47,81 @@ fun ListSongsScreen(
         }
     }
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        for (song in listSongs) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(Dp(60f)),
-            ) {
-                Column(modifier = Modifier.align(Alignment.CenterVertically)) {
-                    IconButton(onClick = { navController.navigate(route = Routes.PlaySong.name + "/${song.id}") }) {
-                        Icon(
-                            Icons.Filled.PlayArrow, contentDescription = "play music",
-                            Modifier.size(Dp(35f))
+    UtilsViews.TopBar(
+        onBackPressed = null,
+        title = "List songs"
+    ) {
+
+        Column(modifier = Modifier.fillMaxSize()) {
+            for (song in listSongs) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(Dp(60f)),
+                ) {
+                    Column(modifier = Modifier.align(Alignment.CenterVertically)) {
+                        IconButton(onClick = { navController.navigate(route = Routes.PlaySong.name + "/${song.id}") }) {
+                            Icon(
+                                Icons.Filled.PlayArrow, contentDescription = "play music",
+                                Modifier.size(Dp(35f))
+                            )
+                        }
+                    }
+                    Column(
+                        modifier = Modifier
+                            .align(Alignment.CenterVertically)
+                            .padding(start = Dp(20f))
+                    ) {
+                        Text(
+                            text = "title - ${song.title}",
+                            modifier = Modifier.padding(bottom = Dp(5f))
                         )
+                        Text(text = "band - ${song.band}")
                     }
                 }
-                Column(
-                    modifier = Modifier
-                        .align(Alignment.CenterVertically)
-                        .padding(start = Dp(20f))
-                ) {
-                    Text(
-                        text = "title - ${song.title}",
-                        modifier = Modifier.padding(bottom = Dp(5f))
-                    )
-                    Text(text = "band - ${song.band}")
-                }
+                Divider()
             }
-            Divider()
         }
     }
+
 }
 
 @Preview(showBackground = true)
 @Composable
 fun ListSongsPreview() {
-    Column(modifier = Modifier.fillMaxSize()) {
-        for (i in 0..9) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(Dp(60f)),
-            ) {
-                Column(modifier = Modifier.align(Alignment.CenterVertically)) {
-                    IconButton(onClick = { /*TODO*/ }) {
-                        Icon(
-                            Icons.Filled.PlayArrow, contentDescription = "play music",
-                            Modifier.size(Dp(35f))
+    UtilsViews.TopBar(
+        onBackPressed = null,
+        title = "List songs"
+    ) {
+        Column(modifier = Modifier.fillMaxSize()) {
+            for (i in 0..9) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(Dp(60f)),
+                ) {
+                    Column(modifier = Modifier.align(Alignment.CenterVertically)) {
+                        IconButton(onClick = { /*TODO*/ }) {
+                            Icon(
+                                Icons.Filled.PlayArrow, contentDescription = "play music",
+                                Modifier.size(Dp(35f))
+                            )
+                        }
+                    }
+                    Column(
+                        modifier = Modifier
+                            .align(Alignment.CenterVertically)
+                            .padding(start = Dp(20f))
+                    ) {
+                        Text(
+                            text = "title - link park",
+                            modifier = Modifier.padding(bottom = Dp(5f))
                         )
+                        Text(text = "band - link park")
                     }
                 }
-                Column(
-                    modifier = Modifier
-                        .align(Alignment.CenterVertically)
-                        .padding(start = Dp(20f))
-                ) {
-                    Text(
-                        text = "title - link park",
-                        modifier = Modifier.padding(bottom = Dp(5f))
-                    )
-                    Text(text = "band - link park")
-                }
+                Divider()
             }
-            Divider()
         }
     }
 }
