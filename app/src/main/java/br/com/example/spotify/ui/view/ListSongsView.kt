@@ -60,6 +60,8 @@ fun ListSongsScreen(
                         .height(Dp(60f)),
                 ) {
                     Column(modifier = Modifier.align(Alignment.CenterVertically)) {
+                        // TODO: replace with image of song
+                        // TODO: all horizontal row is a button to play a music
                         IconButton(onClick = { navController.navigate(route = Routes.PlaySong.name + "/${song.id}") }) {
                             Icon(
                                 Icons.Filled.PlayArrow, contentDescription = "play music",

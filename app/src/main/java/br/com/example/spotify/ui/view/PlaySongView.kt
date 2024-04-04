@@ -48,6 +48,8 @@ import org.koin.androidx.compose.koinViewModel
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
+// TODO: make all @Preview composable
+
 private val songStateFlow = MutableStateFlow<SongModel?>(null)
 
 @androidx.annotation.OptIn(UnstableApi::class)
@@ -117,6 +119,7 @@ fun AlbumArtAndTitleSection(title: String?, band: String?) {
         verticalArrangement = Arrangement.spacedBy(32.dp)
     ) {
         Image(
+            // TODO: add custom image
             painter = painterResource(R.drawable.ic_launcher_foreground),
             contentDescription = "Capa do álbum",
             modifier = Modifier
@@ -150,6 +153,7 @@ fun PlaybackControlsSection(
         horizontalArrangement = Arrangement.spacedBy(32.dp)
     ) {
         IconButton(onClick = {
+            // TODO: one click to back begin and two clicks back to previous song
             try {
                 songStateFlow.value = allSongs?.get(allSongs.indexOf(songStateFlow.value) - 1)
             } catch (_: IndexOutOfBoundsException) {
