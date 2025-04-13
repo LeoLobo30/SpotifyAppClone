@@ -31,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.media3.common.MediaItem
@@ -235,7 +236,7 @@ fun SeekBarSection(exoPlayer: ExoPlayer) {
 
     Row(modifier = Modifier.fillMaxWidth()) {
         Text(
-            text = formatTime(seekBarValue),
+            text = FormatTime(seekBarValue),
             modifier = Modifier.align(Alignment.CenterVertically)
         )
 
@@ -260,8 +261,31 @@ fun SeekBarSection(exoPlayer: ExoPlayer) {
 }
 
 @Composable
-fun formatTime(seconds: Float): String {
+fun FormatTime(seconds: Float): String {
     val minutes = (seconds / 60).toInt()
     val secondsFormatted = "%.0f".format(seconds % 60)
     return "${minutes}m : ${secondsFormatted}s"
+}
+
+@Preview
+@Composable
+fun SeekBarSectionPreview() {
+    SeekBarSection(
+        ExoPlayer.Builder(LocalContext.current).build()
+    )
+}
+
+@Preview
+@Composable
+fun PlaybackControlsSectionPreview() {
+    PlaybackControlsSection(
+        ExoPlayer.Builder(LocalContext.current).build(),
+        listOf(SongModel(1, "song 1", "band 1", "https://example.com/song1.mp3"))
+    )
+}
+
+@Preview
+@Composable
+fun formatTimePreview() {
+    Text(text = FormatTime(65f))
 }
