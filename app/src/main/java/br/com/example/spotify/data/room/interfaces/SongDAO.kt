@@ -6,6 +6,7 @@ import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
 import br.com.example.spotify.data.model.SongModel
+import javax.inject.Inject
 
 @Dao
 interface SongDAO {

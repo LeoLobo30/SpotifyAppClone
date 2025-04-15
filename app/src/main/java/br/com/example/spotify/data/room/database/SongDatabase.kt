@@ -4,6 +4,7 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 import br.com.example.spotify.data.model.SongModel
 import br.com.example.spotify.data.room.interfaces.SongDAO
+import javax.inject.Inject
 
 @Database(entities = [SongModel::class], version = 1, exportSchema = false)
 abstract class SongDatabase : RoomDatabase() {

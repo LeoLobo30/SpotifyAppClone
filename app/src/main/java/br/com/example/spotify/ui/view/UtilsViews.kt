@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -41,7 +42,7 @@ class UtilsViews() {
                                 IconButton(onClick = {
                                     onBackPressed()
                                 }) {
-                                    Icon(Icons.Filled.ArrowBack, "Voltar")
+                                    Icon(Icons.AutoMirrored.Filled.ArrowBack, "Voltar")
                                 }
                             }
                         }

@@ -6,11 +6,14 @@ import androidx.lifecycle.ViewModel
 import br.com.example.spotify.data.firebase.impl.RepositoryFirebaseFirestoreImpl
 import br.com.example.spotify.data.model.SongModel
 import br.com.example.spotify.data.room.interfaces.SongDAO
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-open class ListSongsViewModel(
+@HiltViewModel
+class ListSongsViewModel @Inject constructor(
     private val _songDAO: SongDAO,
     private val _repositoryFirebaseFirestoreImpl: RepositoryFirebaseFirestoreImpl
 ) : ViewModel() {

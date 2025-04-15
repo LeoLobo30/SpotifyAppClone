@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -34,6 +33,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
@@ -44,33 +44,24 @@ import br.com.example.spotify.R
 import br.com.example.spotify.data.model.SongModel
 import br.com.example.spotify.ui.viewModel.PlaySongViewModel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
-import org.koin.androidx.compose.koinViewModel
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
-// TODO: make all @Preview composable
-
-private val songStateFlow = MutableStateFlow<SongModel?>(null)
-
 @androidx.annotation.OptIn(UnstableApi::class)
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlaySongScreen(
     navController: NavController,
     idSong: Long?,
-    playSongViewModel: PlaySongViewModel = koinViewModel()
+    playSongViewModel: PlaySongViewModel = hiltViewModel()
 ) {
+    val song by playSongViewModel.currentSong.collectAsState()
     val context = LocalContext.current
-
     var allSongs: List<SongModel> by remember { mutableStateOf(listOf()) }
 
     LaunchedEffect(Unit) {
         allSongs = playSongViewModel.getAllSongs()
-        songStateFlow.value = allSongs.find { it.id == idSong }
+        allSongs.find { it.id == idSong }?.let { playSongViewModel.setSong(it) }
     }
-
-    val song: SongModel? by songStateFlow.collectAsState()
 
     val exoPlayer = remember { ExoPlayer.Builder(context).build() }
 
@@ -106,7 +97,7 @@ fun PlaySongScreen(
             // Barra de progresso da música
             SeekBarSection(exoPlayer)
             // Controles de reprodução (play, pause, stop)
-            PlaybackControlsSection(exoPlayer, allSongs)
+            PlaybackControlsSection(exoPlayer, allSongs, playSongViewModel, song)
         }
     }
 
@@ -144,7 +135,9 @@ fun AlbumArtAndTitleSection(title: String?, band: String?) {
 @Composable
 fun PlaybackControlsSection(
     exoPlayer: ExoPlayer,
-    allSongs: List<SongModel>?
+    allSongs: List<SongModel>?,
+    playSongViewModel: PlaySongViewModel,
+    song: SongModel?
 ) {
     val playOrPause = remember { mutableStateOf(true) }
 
@@ -154,15 +147,21 @@ fun PlaybackControlsSection(
         horizontalArrangement = Arrangement.spacedBy(32.dp)
     ) {
         IconButton(onClick = {
-            // TODO: one click to back begin and two clicks back to previous song
             try {
-                songStateFlow.value = allSongs?.get(allSongs.indexOf(songStateFlow.value) - 1)
+                val index = allSongs?.indexOf(song)
+                val newSong = allSongs?.get(index!! - 1)
+                if (newSong != null) {
+                    playSongViewModel.setSong(newSong)
+                }
+
+                if (newSong != null) {
+                    exoPlayer.setMediaItem(MediaItem.fromUri(newSong.songUrl!!), true)
+                }
+                exoPlayer.prepare()
+                exoPlayer.play()
             } catch (_: IndexOutOfBoundsException) {
+                // optionally handle if first song
             }
-            exoPlayer.setMediaItem(MediaItem.fromUri(songStateFlow.value?.songUrl ?: ""))
-            exoPlayer.stop()
-            exoPlayer.prepare()
-            playOrPause.value = true
         }) {
             Icon(
                 painterResource(R.drawable.baseline_arrow_circle_left_24),
@@ -186,13 +185,18 @@ fun PlaybackControlsSection(
         }
         IconButton(onClick = {
             try {
-                songStateFlow.value = allSongs?.get(allSongs.indexOf(songStateFlow.value) + 1)
+                val index = allSongs?.indexOf(song)
+                val newSong = allSongs?.get(index!! + 1)
+                if (newSong != null) {
+                    playSongViewModel.setSong(newSong)
+                    exoPlayer.setMediaItem(MediaItem.fromUri(newSong.songUrl!!), true)
+                }
+
+                exoPlayer.prepare()
+                exoPlayer.play()
             } catch (_: IndexOutOfBoundsException) {
+                // optionally handle if last song
             }
-            exoPlayer.setMediaItem(MediaItem.fromUri(songStateFlow.value?.songUrl ?: ""))
-            exoPlayer.stop()
-            exoPlayer.prepare()
-            playOrPause.value = true
         }) {
             Icon(
                 painterResource(R.drawable.baseline_arrow_circle_right_24),
@@ -275,17 +279,19 @@ fun SeekBarSectionPreview() {
     )
 }
 
-@Preview
-@Composable
-fun PlaybackControlsSectionPreview() {
-    PlaybackControlsSection(
-        ExoPlayer.Builder(LocalContext.current).build(),
-        listOf(SongModel(1, "song 1", "band 1", "https://example.com/song1.mp3"))
-    )
-}
+//@Preview
+//@Composable
+//fun PlaybackControlsSectionPreview() {
+//    PlaybackControlsSection(
+//        ExoPlayer.Builder(LocalContext.current).build(),
+//        listOf(SongModel(1, "song 1", "band 1", "https://example.com/song1.mp3")),
+//        playSongViewModel,
+//        song
+//    )
+//}
 
 @Preview
 @Composable
-fun formatTimePreview() {
+fun FormatTimePreview() {
     Text(text = FormatTime(65f))
 }

@@ -4,6 +4,9 @@ import android.util.Log
 import br.com.example.spotify.data.firebase.interfaces.RepositoryFirebase
 import br.com.example.spotify.data.model.SongModel
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.FirebaseFirestoreSettings
+import com.google.firebase.firestore.LocalCacheSettings
+import com.google.firebase.firestore.PersistentCacheSettings
 import com.google.firebase.firestore.firestoreSettings
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.firestore.toObject
@@ -29,14 +32,14 @@ class RepositoryFirebaseFirestoreImpl(emulator: Boolean) : RepositoryFirebase<Fi
         return Firebase.firestore
     }
 
-    // 10.0.2.2 is the special IP address to connect to the 'localhost' of
-    // the host computer from an Android emulator.
     override fun getEmulatorInstance(): FirebaseFirestore {
         val firestore = Firebase.firestore
         firestore.useEmulator("10.0.2.2", 8080)
 
         firestore.firestoreSettings = firestoreSettings {
-            isPersistenceEnabled = false
+            PersistentCacheSettings.newBuilder()
+                .setSizeBytes(20 * 1024 * 1024) // Example: 20 MB
+                .build()
         }
 
         return firestore

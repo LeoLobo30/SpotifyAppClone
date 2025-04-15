@@ -10,12 +10,12 @@ plugins {
 
 android {
     namespace = "br.com.example.spotify"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "br.com.example.spotify"
         minSdk = 25
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -49,10 +49,15 @@ android {
         kotlinCompilerExtensionVersion = "1.5.1"
     }
 
-    packaging.resources.excludes += "/META-INF/{AL2.0,LGPL2.1}"
+    packaging {
+        resources {
+            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+        }
+    }
 }
 
 dependencies {
+    // AndroidX & Compose
     implementation("androidx.core:core-ktx:1.16.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
     implementation("androidx.activity:activity-compose:1.10.1")
@@ -69,17 +74,19 @@ dependencies {
     implementation("com.google.firebase:firebase-storage-ktx")
 
     // Media3
-    implementation("androidx.media3:media3-exoplayer:1.6.0")
-    implementation("androidx.media3:media3-ui:1.6.0")
+    implementation("androidx.media3:media3-exoplayer:1.6.1")
+    implementation("androidx.media3:media3-ui:1.6.1")
 
     // Room with KSP
     implementation("androidx.room:room-runtime:2.7.0")
     implementation("androidx.room:room-ktx:2.7.0")
+    implementation("androidx.compose.runtime:runtime-livedata:1.7.8")
     ksp("androidx.room:room-compiler:2.7.0")
 
-    // Hilt
-    implementation("com.google.dagger:hilt-android:2.48")
-    ksp("com.google.dagger:hilt-compiler:2.48")
+    // Hilt (use consistent version 2.56)
+    implementation("com.google.dagger:hilt-android:2.56")
+    kapt("com.google.dagger:hilt-compiler:2.56")
+    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
 
     // Testing
     androidTestImplementation(platform("androidx.compose:compose-bom:2025.04.00"))
