@@ -5,10 +5,6 @@ import androidx.room.Room
 import br.com.example.spotify.data.firebase.impl.RepositoryFirebaseFirestoreImpl
 import br.com.example.spotify.data.room.database.SongDatabase
 import br.com.example.spotify.data.room.interfaces.SongDAO
-import br.com.example.spotify.data.source.FirebaseSource
-import br.com.example.spotify.domain.repository.MusicRepository
-import br.com.example.spotify.domain.repository.MusicRepositoryImpl
-import br.com.example.spotify.domain.usercases.GetSongsUseCase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -36,15 +32,4 @@ object AppModule {
     fun provideFirebaseRepository(): RepositoryFirebaseFirestoreImpl {
         return RepositoryFirebaseFirestoreImpl(false)
     }
-
-    @Provides
-    fun provideFirebaseSource(): FirebaseSource = FirebaseSource()
-
-    @Provides
-    fun provideMusicRepository(firebaseSource: FirebaseSource): MusicRepository =
-        MusicRepositoryImpl(firebaseSource)
-
-    @Provides
-    fun provideGetSongsUseCase(repository: MusicRepository): GetSongsUseCase =
-        GetSongsUseCase(repository)
 }

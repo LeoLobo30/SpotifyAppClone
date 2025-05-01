@@ -13,7 +13,7 @@ android {
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "br.com.example.spotify"
+        applicationId = "br.com.test.spotify"
         minSdk = 25
         targetSdk = 35
         versionCode = 1

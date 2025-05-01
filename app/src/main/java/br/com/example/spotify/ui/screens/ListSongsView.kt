@@ -1,4 +1,4 @@
-package br.com.example.spotify.ui.view
+package br.com.example.spotify.ui.screens
 
 import Routes
 import androidx.compose.foundation.layout.Column
@@ -22,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import br.com.example.spotify.ui.components.topbar.TopBar
 import br.com.example.spotify.ui.viewModel.ListSongsViewModel
 
 @Composable
@@ -29,7 +30,7 @@ fun ListSongsScreen(navController: NavController) {
     val listSongsViewModel: ListSongsViewModel = hiltViewModel()
     val listSongs by listSongsViewModel.listSongs.observeAsState(emptyList())
 
-    UtilsViews.TopBar(
+    TopBar(
         onBackPressed = null,
         title = "List songs"
     ) {

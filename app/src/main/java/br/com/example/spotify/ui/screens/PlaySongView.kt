@@ -1,4 +1,4 @@
-package br.com.example.spotify.ui.view
+package br.com.example.spotify.ui.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -15,6 +15,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -29,6 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -38,12 +40,14 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.ui.PlayerView
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import br.com.example.spotify.R
 import br.com.example.spotify.data.model.SongModel
+import br.com.example.spotify.ui.components.topbar.TopBar
 import br.com.example.spotify.ui.viewModel.PlaySongViewModel
 import kotlinx.coroutines.delay
+import kotlin.reflect.KFunction1
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
@@ -55,23 +59,40 @@ fun PlaySongScreen(
     playSongViewModel: PlaySongViewModel = hiltViewModel()
 ) {
     val song by playSongViewModel.currentSong.collectAsState()
-    val context = LocalContext.current
-    var allSongs: List<SongModel> by remember { mutableStateOf(listOf()) }
+    var allSongs: List<SongModel> by remember { mutableStateOf(emptyList()) }
 
     LaunchedEffect(Unit) {
         allSongs = playSongViewModel.getAllSongs()
         allSongs.find { it.id == idSong }?.let { playSongViewModel.setSong(it) }
     }
 
+    ContentPlaySong(
+        navController = navController,
+        song = song,
+        allSongs = allSongs,
+        setSong = playSongViewModel::setSong
+    )
+}
+
+
+@androidx.annotation.OptIn(UnstableApi::class)
+@Composable
+private fun ContentPlaySong(
+    navController: NavController,
+    song: SongModel?,
+    allSongs: List<SongModel>,
+    setSong: (SongModel) -> Unit
+) {
+    val context = LocalContext.current
     val exoPlayer = remember { ExoPlayer.Builder(context).build() }
 
-    LaunchedEffect(Unit) {
-        PlayerView(context).player = exoPlayer
+    LaunchedEffect(song) {
         if (song != null) {
-            val mediaItem = song?.songUrl?.let { MediaItem.fromUri(it) }
-            exoPlayer.setMediaItem(mediaItem ?: MediaItem.EMPTY)
+            val mediaItem = MediaItem.fromUri(song.songUrl ?: "")
+            exoPlayer.setMediaItem(mediaItem)
+            exoPlayer.prepare()
+            exoPlayer.play()
         }
-        exoPlayer.prepare()
     }
 
     DisposableEffect(Unit) {
@@ -80,10 +101,13 @@ fun PlaySongScreen(
         }
     }
 
-    UtilsViews.TopBar(onBackPressed = {
-        navController.popBackStack()
-        exoPlayer.release()
-    }, title = "Play") {
+    TopBar(
+        onBackPressed = {
+            navController.popBackStack()
+            exoPlayer.release()
+        },
+        title = "Play"
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -92,16 +116,18 @@ fun PlaySongScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // Cabeçalho com capa do álbum e título da música
             AlbumArtAndTitleSection(song?.title, song?.band)
-            // Barra de progresso da música
             SeekBarSection(exoPlayer)
-            // Controles de reprodução (play, pause, stop)
-            PlaybackControlsSection(exoPlayer, allSongs, playSongViewModel, song)
+            PlaybackControlsSection(
+                exoPlayer = exoPlayer,
+                allSongs = allSongs,
+                setSong = setSong,
+                currentSong = song
+            )
         }
     }
-
 }
+
 
 @Composable
 fun AlbumArtAndTitleSection(title: String?, band: String?) {
@@ -135,11 +161,23 @@ fun AlbumArtAndTitleSection(title: String?, band: String?) {
 @Composable
 fun PlaybackControlsSection(
     exoPlayer: ExoPlayer,
-    allSongs: List<SongModel>?,
-    playSongViewModel: PlaySongViewModel,
-    song: SongModel?
+    allSongs: List<SongModel>,
+    setSong: (SongModel) -> Unit,
+    currentSong: SongModel?
 ) {
-    val playOrPause = remember { mutableStateOf(true) }
+    var isPlaying by remember { mutableStateOf(exoPlayer.isPlaying) }
+
+    DisposableEffect(exoPlayer) {
+        val listener = object : Player.Listener {
+            override fun onIsPlayingChanged(newIsPlaying: Boolean) {
+                isPlaying = newIsPlaying
+            }
+        }
+        exoPlayer.addListener(listener)
+        onDispose {
+            exoPlayer.removeListener(listener)
+        }
+    }
 
     Row(
         modifier = Modifier.padding(16.dp),
@@ -147,60 +185,46 @@ fun PlaybackControlsSection(
         horizontalArrangement = Arrangement.spacedBy(32.dp)
     ) {
         IconButton(onClick = {
-            try {
-                val index = allSongs?.indexOf(song)
-                val newSong = allSongs?.get(index!! - 1)
-                if (newSong != null) {
-                    playSongViewModel.setSong(newSong)
-                }
-
-                if (newSong != null) {
-                    exoPlayer.setMediaItem(MediaItem.fromUri(newSong.songUrl!!), true)
-                }
-                exoPlayer.prepare()
-                exoPlayer.play()
-            } catch (_: IndexOutOfBoundsException) {
-                // optionally handle if first song
+            val index = allSongs.indexOf(currentSong)
+            val prevSong = allSongs.getOrNull(index - 1)
+            prevSong?.let {
+                setSong(it)
             }
         }) {
             Icon(
-                painterResource(R.drawable.baseline_arrow_circle_left_24),
-                contentDescription = "backSong"
+                painterResource(id = R.drawable.baseline_arrow_circle_left_24),
+                contentDescription = "Previous Song"
             )
         }
-        IconButton(onClick = { playOrPause.value = !playOrPause.value }) {
-            if (playOrPause.value) {
-                Icon(
-                    painterResource(R.drawable.baseline_pause_circle_24),
-                    contentDescription = "Play"
-                )
-                exoPlayer.play()
-            } else {
-                Icon(
-                    painterResource(R.drawable.baseline_play_circle_24),
-                    contentDescription = "Pause"
-                )
-                exoPlayer.pause()
-            }
-        }
-        IconButton(onClick = {
-            try {
-                val index = allSongs?.indexOf(song)
-                val newSong = allSongs?.get(index!! + 1)
-                if (newSong != null) {
-                    playSongViewModel.setSong(newSong)
-                    exoPlayer.setMediaItem(MediaItem.fromUri(newSong.songUrl!!), true)
-                }
 
-                exoPlayer.prepare()
+        IconButton(onClick = {
+            if (isPlaying) {
+                exoPlayer.pause()
+            } else {
                 exoPlayer.play()
-            } catch (_: IndexOutOfBoundsException) {
-                // optionally handle if last song
             }
         }) {
             Icon(
-                painterResource(R.drawable.baseline_arrow_circle_right_24),
-                contentDescription = "nextSong"
+                painterResource(
+                    id = if (isPlaying)
+                        R.drawable.baseline_pause_circle_24
+                    else
+                        R.drawable.baseline_play_circle_24
+                ),
+                contentDescription = if (isPlaying) "Pause" else "Play"
+            )
+        }
+
+        IconButton(onClick = {
+            val index = allSongs.indexOf(currentSong)
+            val nextSong = allSongs.getOrNull(index + 1)
+            nextSong?.let {
+                setSong(it)
+            }
+        }) {
+            Icon(
+                painterResource(id = R.drawable.baseline_arrow_circle_right_24),
+                contentDescription = "Next Song"
             )
         }
     }
@@ -271,27 +295,37 @@ fun FormatTime(seconds: Float): String {
     return "${minutes}m : ${secondsFormatted}s"
 }
 
-@Preview
+
+@Preview(showBackground = true)
 @Composable
-fun SeekBarSectionPreview() {
-    SeekBarSection(
-        ExoPlayer.Builder(LocalContext.current).build()
+fun ContentPlaySongPreview() {
+    val navController = rememberNavController()
+    val playSongViewModel: PlaySongViewModel = hiltViewModel()
+
+    // Fake song for preview
+    val fakeSong = SongModel(
+        id = 1L,
+        title = "Preview Song",
+        band = "Preview Band",
+        songUrl = "https://example.com/fake.mp3"
     )
-}
 
-//@Preview
-//@Composable
-//fun PlaybackControlsSectionPreview() {
-//    PlaybackControlsSection(
-//        ExoPlayer.Builder(LocalContext.current).build(),
-//        listOf(SongModel(1, "song 1", "band 1", "https://example.com/song1.mp3")),
-//        playSongViewModel,
-//        song
-//    )
-//}
+    val fakeSongList = listOf(
+        fakeSong,
+        SongModel(
+            id = 2L,
+            title = "Next Preview Song",
+            band = "Another Band",
+            songUrl = "https://example.com/next.mp3"
+        )
+    )
 
-@Preview
-@Composable
-fun FormatTimePreview() {
-    Text(text = FormatTime(65f))
+    Surface(modifier = Modifier.fillMaxSize()) {
+        ContentPlaySong(
+            navController = navController,
+            song = fakeSong,
+            allSongs = fakeSongList,
+            setSong = playSongViewModel::setSong
+        )
+    }
 }

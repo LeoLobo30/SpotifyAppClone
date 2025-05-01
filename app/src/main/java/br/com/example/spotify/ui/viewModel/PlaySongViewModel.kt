@@ -6,7 +6,7 @@ import br.com.example.spotify.data.room.interfaces.SongDAO
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
@@ -16,10 +16,10 @@ class PlaySongViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val _currentSong = MutableStateFlow<SongModel?>(null)
-    val currentSong: StateFlow<SongModel?> = _currentSong
+    val currentSong: MutableStateFlow<SongModel?> = _currentSong
 
     fun setSong(song: SongModel) {
-        _currentSong.value = song
+        _currentSong.update { song }
     }
 
     suspend fun getSongById(id: Long) = withContext(Dispatchers.IO) {
@@ -29,5 +29,7 @@ class PlaySongViewModel @Inject constructor(
     suspend fun getAllSongs() = withContext(Dispatchers.IO) {
         _songDAO.getAll()
     }
+
+
 
 }

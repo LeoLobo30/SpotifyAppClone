@@ -10,3 +10,4 @@ local.properties
 *.log
 /.idea/
 firestore
+google-services.json
