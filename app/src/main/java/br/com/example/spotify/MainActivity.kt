@@ -3,6 +3,7 @@ package br.com.example.spotify
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import br.com.example.spotify.ui.theme.SpotifyTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -12,7 +13,9 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            MainApp()
+            SpotifyTheme {
+                MainApp()
+            }
         }
     }
 }
