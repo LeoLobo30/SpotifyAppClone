@@ -3,7 +3,7 @@ package br.com.example.spotify
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import br.com.example.spotify.ui.theme.SpotifyTheme
+import br.com.example.spotify.theme.SpotifyTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint

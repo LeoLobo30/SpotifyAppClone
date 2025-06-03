@@ -23,7 +23,8 @@ import br.com.example.spotify.data.model.SongModel
 
 @Composable
 fun SongRow(song: SongModel, isSelected: Boolean, onPlayClick: () -> Unit) {
-    val background = if (isSelected) MaterialTheme.colorScheme.secondary.copy(alpha = 0.1f) else MaterialTheme.colorScheme.background
+    val background = if (isSelected) MaterialTheme.colorScheme.secondary.copy(alpha = 0.1f)
+    else MaterialTheme.colorScheme.background
 
     Row(
         modifier = Modifier
