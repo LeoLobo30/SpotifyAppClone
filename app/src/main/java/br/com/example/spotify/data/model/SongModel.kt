@@ -8,34 +8,29 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "songs")
 data class SongModel(
     @PrimaryKey(autoGenerate = true)
-    val id: Long? = null,
-    val title: String? = null,
-    val band: String? = null,
-    val songUrl : String? = null
+    var id: Long = 0L,
+    var title: String = "",
+    var band: String = "",
+    var songUrl: String = ""
 ) : Parcelable {
     constructor(parcel: Parcel) : this(
         parcel.readLong(),
-        parcel.readString(),
-        parcel.readString(),
-        parcel.readString()
-    ) {
+        parcel.readString() ?: "",
+        parcel.readString() ?: "",
+        parcel.readString() ?: ""
+    )
+
+    override fun writeToParcel(parcel: Parcel, flags: Int) {
+        parcel.writeLong(id)
+        parcel.writeString(title)
+        parcel.writeString(band)
+        parcel.writeString(songUrl)
     }
 
-    override fun describeContents(): Int {
-        TODO("Not yet implemented")
-    }
-
-    override fun writeToParcel(dest: Parcel, flags: Int) {
-        TODO("Not yet implemented")
-    }
+    override fun describeContents(): Int = 0
 
     companion object CREATOR : Parcelable.Creator<SongModel> {
-        override fun createFromParcel(parcel: Parcel): SongModel {
-            return SongModel(parcel)
-        }
-
-        override fun newArray(size: Int): Array<SongModel?> {
-            return arrayOfNulls(size)
-        }
+        override fun createFromParcel(parcel: Parcel): SongModel = SongModel(parcel)
+        override fun newArray(size: Int): Array<SongModel?> = arrayOfNulls(size)
     }
 }
